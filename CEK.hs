@@ -2,7 +2,7 @@ import Grammar
 import Tokens
 import Data.Map.Strict as M
 import Data.Maybe
-
+import Debug.Trace as D
 
 
 data Frame  = HoleApp Expr E 
@@ -12,7 +12,8 @@ data Frame  = HoleApp Expr E
             | CompBinHole String Expr
             | WhileHole Expr Expr  
             | ContEvalHole Expr 
-            deriving (Show)
+            | PRINTING
+            deriving (Show, Eq)
 
 
 
@@ -88,18 +89,33 @@ eval1 ((IntBinOp op x (Int y)) , e, k) = eval1 (x, e, (IntBinOpHole op (Int y)) 
 eval1 ((IntBinOp op x y) , e, k) = eval1 (x, e, (IntBinOpHole op y) : k )
 
 -- Binary Operators
-eval1 ((BinOp op (Bool x) (Bool y)), e, k) = eval1 (Bool (applyBinOp op x y), e, k) 
+eval1 ((BinOp op (Bool x) (Bool y)), e, k) = eval1 (Bool (applyBinOp op x y), e, k)
+eval1 ((BinOp op x y), e, k ) = eval1 (BinOp op (fst3 (eval1 (x, e, []))) (fst3 (eval1 (y, e, []))), e, k)
 
 -- While loops
 eval1 ((WhileLoop cond exprs ), e, k)   | fst3 (eval1 (cond, e, []) )  == (Bool True)  = eval1 (exprs, e, [WhileHole cond exprs])
                                         | fst3 (eval1 (cond, e, []) )  == (Bool False) = eval1 (Bool False, e, k)
 -- = eval1 (Loop, e, (WhileHole cond exprs exprs e):k)
-
+eval1 ((PrintF expr), e, k) = ((expr), e, (PRINTING):k)
 -- Continuing evalutation
 eval1 (ContEval exp1 exp2, e, k) = eval1 (exp1, e, (ContEvalHole exp2):k)
 eval1 a = a
 
 
+-- use for all messy/monadic functions
+startEval :: (Expr,E,K) -> IO ()
+startEval s = do
+                let (expr, e, k) = (eval1 s)
+                if (k) == [] 
+                    then do 
+                        (print "Evaluation Complete") 
+                    else do 
+                        if ((head k) == (PRINTING))
+                            then do
+                                putStrLn $ (show expr) 
+                                (startEval (expr, e, (tail k)))
+                            else do
+                            (startEval (expr, e, k))
 
 
 -- ==========================================================================================

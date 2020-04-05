@@ -39,6 +39,7 @@ tokens :-
   while         {\p -> TWhile }
   "&&"          {\p -> TAnd}
   "||"          {\p -> TOr}
+  print         {\p -> TPrintF }
   $alpha [$alpha $digit \_ \’]*   { \s -> TVar s } 
 
 {
@@ -69,7 +70,8 @@ data Token =
         TWhile      |
         TSemiColon  |
         TAnd        |
-        TOr 
+        TOr         |
+        TPrintF
         deriving (Eq, Show)
 
 
