@@ -86,6 +86,10 @@ eval1 ((IntBinOp op x (Bool y)), e, k) = error ("condition in comparator must ev
 eval1 ((IntBinOp op (Int x) y) , e, k) = eval1 (y, e, (IntBinOpHole op (Int x)) : k )
 eval1 ((IntBinOp op x (Int y)) , e, k) = eval1 (x, e, (IntBinOpHole op (Int y)) : k )
 eval1 ((IntBinOp op x y) , e, k) = eval1 (x, e, (IntBinOpHole op y) : k )
+
+-- Binary Operators
+eval1 ((BinOp op (Bool x) (Bool y)), e, k) = eval1 (Bool (applyBinOp op x y), e, k) 
+
 -- While loops
 eval1 ((WhileLoop cond exprs ), e, k)   | fst3 (eval1 (cond, e, []) )  == (Bool True)  = eval1 (exprs, e, [WhileHole cond exprs])
                                         | fst3 (eval1 (cond, e, []) )  == (Bool False) = eval1 (Bool False, e, k)
@@ -153,6 +157,8 @@ thd3 (_, _, x) = x
 insOrUpdMap :: [Char] -> Expr -> Map [Char] Expr -> Map [Char] Expr
 insOrUpdMap key val map = M.insert key val $ M.delete key map
 
+applyBinOp "and" x y = x && y
+applyBinOp "or" x y = x || y
 
 applyIntBinOp "+" x y = x + y
 applyIntBinOp "-" x y = x - y

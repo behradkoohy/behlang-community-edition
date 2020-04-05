@@ -33,21 +33,26 @@ import Tokens
     Bool        { TBoolType }
     ':'         { TColon }
     while       { TWhile }
+    '||'        { TOr }
+    '&&'        { TAnd }
 
 
 
 
 %right '->' in then else ';'
-%left '+' '-' 
+%left '+' '-' '&&'
+%left '||'
 %nonassoc '<' '>' '=' ':=' '(' ')' 
 %%
 
 
-Expr    : bool                                          { Bool $1 }
+Expr    : Expr '&&' Expr                                { BinOp "and" $1 $3 }
+        | Expr '||' Expr                                { BinOp "or" $1 $3 }
         | Expr '<' Expr                                 { CompBinOp "<" $1 $3 }
         | Expr '>' Expr                                 { CompBinOp ">" $1 $3 }
         | Expr '+' Expr                                 { IntBinOp "+" $1 $3 }
         | Expr '-' Expr                                 { IntBinOp "-" $1 $3 }
+        | bool                                          { Bool $1 }
         | if Expr then Expr else Expr                   { If $2 $4 $6 }
         | '(' Expr ')'                                  { $2 }
         | var '=' Expr                                  { VarDec $1 $3 }
@@ -83,7 +88,8 @@ data Expr = Bool Bool                       |
             Halt                            |
             WhileLoop Expr Expr             |
             Loop                            |
-            ContEval Expr Expr              
+            ContEval Expr Expr              |
+            BinOp String Expr Expr          
             deriving (Show, Eq)
 
 

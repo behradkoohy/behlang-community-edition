@@ -37,6 +37,8 @@ tokens :-
   Bool          {\p -> TBoolType }
   ":"           {\p -> TColon}
   while         {\p -> TWhile }
+  "&&"          {\p -> TAnd}
+  "||"          {\p -> TOr}
   $alpha [$alpha $digit \_ \’]*   { \s -> TVar s } 
 
 {
@@ -65,7 +67,9 @@ data Token =
         TGThan      |
         TMinus      |
         TWhile      |
-        TSemiColon
+        TSemiColon  |
+        TAnd        |
+        TOr 
         deriving (Eq, Show)
 
 
