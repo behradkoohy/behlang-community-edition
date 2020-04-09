@@ -20,6 +20,8 @@ tokens :-
   \>            {\p -> TGThan }
   \+            {\p -> TAdd }
   \-            {\p -> TMinus }
+  "=="          {\p -> TEquality }
+  \%            {\p -> TModulo }
   if            {\p -> TIf }
   then          {\p -> TThen } 
   let           {\p -> TLet }
@@ -40,6 +42,12 @@ tokens :-
   "&&"          {\p -> TAnd}
   "||"          {\p -> TOr}
   print         {\p -> TPrintF }
+  \[           {\p -> TLSquare }
+  \]           {\p -> TRSquare }
+  \,          {\p -> TComma }
+  append      {\p -> TAppend }
+  modify      {\p -> TModify }
+  len         {\p -> TLen }
   $alpha [$alpha $digit \_ \’]*   { \s -> TVar s } 
 
 {
@@ -48,6 +56,8 @@ data Token =
         TBool Bool  |
         TLThan      |
         TAdd        |
+        TModulo     |
+        TEquality   |
         TIf         |
         TThen       |
         TLet        |
@@ -71,7 +81,13 @@ data Token =
         TSemiColon  |
         TAnd        |
         TOr         |
-        TPrintF
+        TPrintF     |
+        TLSquare    |
+        TRSquare    |
+        TComma      |
+        TAppend     |
+        TModify     |
+        TLen
         deriving (Eq, Show)
 
 

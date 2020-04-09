@@ -40,6 +40,7 @@ eval1 :: (Expr, E, K) -> (Expr, E, K)
 -- Primitive type return
 eval1 ((Bool b), e, [])      = ((Bool b), e, [])
 eval1 ((Int x), e, [])       = ((Int x), e, [])
+eval1 ((ListStr x), e, [])      = ((ListStr x), e, [])
 -- Primitive type exp
 -- eval1 ((Bool b), e, ((IntBinOpHole op ex):ks))      = ((Bool b), e, ks) -- This shouldnt happen??
 eval1 ((Int x), e, ((IntBinOpHole op ex):ks))       = eval1 ((IntBinOp op ex (Int x)), e, ks)
@@ -47,9 +48,10 @@ eval1 ((Int x), e, ((IntBinOpHole op ex):ks))       = eval1 ((IntBinOp op ex (In
 -- eval1 ((Bool b), e, ((CompBinHole op ex):ks))       = eval1 ((Bool b), e, ks) -- This shouldnt happen??
 eval1 ((Int x), e, ((CompBinHole op ex):ks))        = eval1 ((CompBinOp op ex (Int x)), e, ks) -- This shouldnt happen??
 
-eval1 ((Int x), e, ((ContEvalHole exp2):ks))        = eval1 (exp2, e, ks)
+eval1 ((Int x), e, ((ContEvalHole exp2):ks))         = eval1 (exp2, e, ks)
 eval1 ((Bool b), e, ((ContEvalHole exp2):ks))        = eval1 (exp2, e, ks)
-
+eval1 ((ListStr x), e, ((ContEvalHole exp2):ks))        = eval1 (exp2, e, ks)
+-- While loops
 eval1 ((Int x), e,  ((WhileHole cond expr):ks))        = eval1 ((WhileLoop cond expr), e, ks)
 eval1 ((Bool b), e, ((WhileHole cond expr):ks))        = eval1 ((WhileLoop cond expr), e, ks)
 
@@ -92,11 +94,17 @@ eval1 ((IntBinOp op x y) , e, k) = eval1 (x, e, (IntBinOpHole op y) : k )
 eval1 ((BinOp op (Bool x) (Bool y)), e, k) = eval1 (Bool (applyBinOp op x y), e, k)
 eval1 ((BinOp op x y), e, k ) = eval1 (BinOp op (fst3 (eval1 (x, e, []))) (fst3 (eval1 (y, e, []))), e, k)
 
+
+-- List Operators
+eval1 (ListUnaOp op l, e, k) = eval1 (Int (applyListUnaOp op (getList $ fst3 $ eval1 (l, e, []))), e, k)
+eval1 (ListBinOp op l x, e, k) = eval1 (ListStr (applyListOp op (getList $ fst3 $ eval1 (l, e, [])) x), e, k)
+eval1 (ListBinBinOp op l n x, e, k) = eval1 (ListStr (applyListBinOp op (getList $ fst3 $ eval1 (l, e, [])) n (getInt $ fst3 $ eval1 (x, e, []) ) ), e, k)
+
 -- While loops
 eval1 ((WhileLoop cond exprs ), e, k)   | fst3 (eval1 (cond, e, []) )  == (Bool True)  = eval1 (exprs, e, [WhileHole cond exprs])
                                         | fst3 (eval1 (cond, e, []) )  == (Bool False) = eval1 (Bool False, e, k)
 -- = eval1 (Loop, e, (WhileHole cond exprs exprs e):k)
-eval1 ((PrintF expr), e, k) = ((expr), e, (PRINTING):k)
+eval1 ((PrintF expr), e, k) = (fst3 $ eval1 (expr, e, []), e, (PRINTING):k)
 -- Continuing evalutation
 eval1 (ContEval exp1 exp2, e, k) = eval1 (exp1, e, (ContEvalHole exp2):k)
 eval1 a = a
@@ -108,11 +116,11 @@ startEval s = do
                 let (expr, e, k) = (eval1 s)
                 if (k) == [] 
                     then do 
-                        (print "Evaluation Complete") 
+                        return()
                     else do 
                         if ((head k) == (PRINTING))
                             then do
-                                putStrLn $ (show expr) 
+                                putStrLn $ (pretty expr) 
                                 (startEval (expr, e, (tail k)))
                             else do
                             (startEval (expr, e, k))
@@ -122,15 +130,25 @@ startEval s = do
 -- https://stackoverflow.com/questions/25493757/pattern-matching-mixed-with-guards/25493823 -
 -- ==========================================================================================
 
+pretty :: Expr -> String
+pretty (Int x)      = show x
+pretty (Bool b)     = show b
+pretty (ListStr l)     = show l
+pretty a = show a
+
 moreEvals ((Bool b), e, k) = False
 moreEvals ((Int x), e, k) = False
 moreEvals _ = True
 
+getList (ListStr x) = x
+getList _ = error "not a list"
 
+getInt (Int x) = x
+getInt _ = error "not a list"
 
 reflectOp "<" = ">"
 reflectOp ">" = "<"
-reflectOp "==" = "=="
+reflectOp "=" = "="
 
 mLoop 0 s@(c,e,k) sprev@(c',e',k') env  = mLoop 1 (eval1 (c,env,k)) s env
 mLoop n s@(c,e,k) sprev@(c',e',k') env  |  (fst3 sprev) == (fst3 s) = (c,e,k)
@@ -178,9 +196,29 @@ applyBinOp "or" x y = x || y
 
 applyIntBinOp "+" x y = x + y
 applyIntBinOp "-" x y = x - y
+applyIntBinOp "%" x y = mod x y
+-- applyIntBinOp "==" x y = x == y
 
 applyCompBinOp "<" x y = x < y
 applyCompBinOp ">" x y = x > y
+applyCompBinOp "=" x y = x == y
+
+
+
+applyListUnaOp "LEN" l = length l
+
+
+applyListOp "APP" l x = l ++ [x]
+
+applyListBinOp "MOD" l n x = replaceNth n x l
+
+
+
+replaceNth :: Int -> a -> [a] -> [a]
+replaceNth _ _ [] = []
+replaceNth n newVal (x:xs)  | n == 0 = newVal:xs
+                            | n > (length xs) = error "list index out of bounds"
+                            | otherwise = x:replaceNth (n-1) newVal xs
 
 
 evalBoolExpr (Bool True) = True
