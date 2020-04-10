@@ -42,12 +42,12 @@ tokens :-
   "&&"          {\p -> TAnd}
   "||"          {\p -> TOr}
   print         {\p -> TPrintF }
-  \[           {\p -> TLSquare }
-  \]           {\p -> TRSquare }
-  \,          {\p -> TComma }
-  append      {\p -> TAppend }
-  modify      {\p -> TModify }
-  len         {\p -> TLen }
+  \[            {\p -> TLSquare }
+  \]            {\p -> TRSquare }
+  \,            {\p -> TComma }
+  append        {\p -> TAppend }
+  !!            {\p -> TListAccess }
+  len           {\p -> TLen }
   $alpha [$alpha $digit \_ \’]*   { \s -> TVar s } 
 
 {
@@ -86,6 +86,7 @@ data Token =
         TRSquare    |
         TComma      |
         TAppend     |
+        TListAccess |
         TModify     |
         TLen
         deriving (Eq, Show)

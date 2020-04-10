@@ -8,12 +8,14 @@ import Debug.Trace as D
 data Frame  = HoleApp Expr E 
             | AppHole Expr 
             | IfHole Expr Expr 
-            | IntBinOpHole String Expr 
+            | IntBinOpHole String Expr Char -- char is side that non-int is on
             | CompBinHole String Expr
             | WhileHole Expr Expr  
             | ContEvalHole Expr 
             | PRINTING
+            | ListAccHole Expr Char -- char is side being evaluated
             deriving (Show, Eq)
+
 
 
 
@@ -43,10 +45,14 @@ eval1 ((Int x), e, [])       = ((Int x), e, [])
 eval1 ((ListStr x), e, [])      = ((ListStr x), e, [])
 -- Primitive type exp
 -- eval1 ((Bool b), e, ((IntBinOpHole op ex):ks))      = ((Bool b), e, ks) -- This shouldnt happen??
-eval1 ((Int x), e, ((IntBinOpHole op ex):ks))       = eval1 ((IntBinOp op ex (Int x)), e, ks)
+eval1 ((Int x), e, ((IntBinOpHole op ex 'L'):ks))       = eval1 ((IntBinOp op (Int x) ex), e, ks)
+eval1 ((Int x), e, ((IntBinOpHole op ex 'R'):ks))       = eval1 ((IntBinOp op ex (Int x)), e, ks)
 
 -- eval1 ((Bool b), e, ((CompBinHole op ex):ks))       = eval1 ((Bool b), e, ks) -- This shouldnt happen??
 eval1 ((Int x), e, ((CompBinHole op ex):ks))        = eval1 ((CompBinOp op ex (Int x)), e, ks) -- This shouldnt happen??
+eval1 ((Int x), e, (ListAccHole expr 'R'):ks)       = eval1 (ListAcc expr (Int x), e , ks)
+eval1 ((ListStr x), e, ((ListAccHole expr 'L'):ks)) = eval1 (ListAcc (ListStr x) expr, e, ks)
+
 
 eval1 ((Int x), e, ((ContEvalHole exp2):ks))         = eval1 (exp2, e, ks)
 eval1 ((Bool b), e, ((ContEvalHole exp2):ks))        = eval1 (exp2, e, ks)
@@ -75,20 +81,19 @@ eval1 ((Bool b), e, (IfHole t f):ts)    | b == True = (t, e, ts)
 eval1 ((CompBinOp op (Int x) (Int y)), e, k)  = eval1 ((Bool (applyCompBinOp op x y)), e, k)
 eval1 ((CompBinOp op (Bool x) y), e, k) = error ("condition in comparator must evaluate to int")
 eval1 ((CompBinOp op x (Bool y)), e, k) = error ("condition in comparator must evaluate to int")
+
 eval1 ((CompBinOp op (Int x) y) , e, k) = eval1 (y, e, (CompBinHole op (Int x)) : k )
 -- Sometimes we need to flip the operator sign because the order of stuff is changed
 eval1 ((CompBinOp op x (Int y)) , e, k) = eval1 (x, e, (CompBinHole (reflectOp op) (Int y)) : k )
 eval1 ((CompBinOp op x y), e, k) = eval1 (x, e, (CompBinHole (reflectOp op) y) : k )
 
 -- Mathematical Operators
--- minus (-) gets flipped somewhere and it cant
--- we need to figure out how to avoid this
 eval1 ((IntBinOp op (Int x) (Int y)), e, k) = eval1 ((Int (applyIntBinOp op x y)), e, k) 
 eval1 ((IntBinOp op (Bool x) y), e, k) = error ("condition in comparator must evaluate to int")
 eval1 ((IntBinOp op x (Bool y)), e, k) = error ("condition in comparator must evaluate to int")
-eval1 ((IntBinOp op (Int x) y) , e, k) = eval1 (y, e, (IntBinOpHole op (Int x)) : k )
-eval1 ((IntBinOp op x (Int y)) , e, k) = eval1 (x, e, (IntBinOpHole op (Int y)) : k )
-eval1 ((IntBinOp op x y) , e, k) = eval1 (x, e, (IntBinOpHole op y) : k )
+eval1 ((IntBinOp op (Int x) y) , e, k) = eval1 (y, e, (IntBinOpHole op (Int x) 'R') : k )
+eval1 ((IntBinOp op x (Int y)) , e, k) = eval1 (x, e, (IntBinOpHole op (Int y) 'L') : k )
+eval1 ((IntBinOp op x y) , e, k) = eval1 (x, e, (IntBinOpHole op y 'R') : k )
 
 -- Binary Operators
 eval1 ((BinOp op (Bool x) (Bool y)), e, k) = eval1 (Bool (applyBinOp op x y), e, k)
@@ -96,10 +101,13 @@ eval1 ((BinOp op x y), e, k ) = eval1 (BinOp op (fst3 (eval1 (x, e, []))) (fst3 
 
 
 -- List Operators
-eval1 (ListUnaOp op l, e, k) = eval1 (Int (applyListUnaOp op (getList $ fst3 $ eval1 (l, e, []))), e, k)
+eval1 (ListUnaOp op l x, e, k) = eval1 (Int (applyListUnaOp op (getList $ fst3 $ eval1 (l, e, [])) x), e, k)
 eval1 (ListBinOp op l x, e, k) = eval1 (ListStr (applyListOp op (getList $ fst3 $ eval1 (l, e, [])) x), e, k)
 eval1 (ListBinBinOp op l n x, e, k) = eval1 (ListStr (applyListBinOp op (getList $ fst3 $ eval1 (l, e, [])) n (getInt $ fst3 $ eval1 (x, e, []) ) ), e, k)
-
+eval1 (ListAcc (ListStr l) ((Int x)), e, k ) = eval1 (Int (applyListUnaOp "ACC" l x), e, k)
+eval1 (ListAcc expr ((Int x)), e, k ) = eval1 (expr, e, (ListAccHole (Int x) 'L'):k )
+eval1 (ListAcc (ListStr l) expr, e, k ) = eval1 (expr, e, (ListAccHole (ListStr l) 'R'):k )
+eval1 (ListAcc exprL exprI, e, k ) = eval1 (exprL, e, (ListAccHole exprI 'L'):k )
 -- While loops
 eval1 ((WhileLoop cond exprs ), e, k)   | fst3 (eval1 (cond, e, []) )  == (Bool True)  = eval1 (exprs, e, [WhileHole cond exprs])
                                         | fst3 (eval1 (cond, e, []) )  == (Bool False) = eval1 (Bool False, e, k)
@@ -199,16 +207,20 @@ applyIntBinOp "-" x y = x - y
 applyIntBinOp "%" x y = mod x y
 -- applyIntBinOp "==" x y = x == y
 
+
+-- applyCompBinOp :: String -> Int -> Int -> Bool
 applyCompBinOp "<" x y = x < y
 applyCompBinOp ">" x y = x > y
 applyCompBinOp "=" x y = x == y
 
 
 
-applyListUnaOp "LEN" l = length l
+applyListUnaOp "LEN" l 0 = length l
+applyListUnaOp "ACC" l x = l !! x
 
 
 applyListOp "APP" l x = l ++ [x]
+
 
 applyListBinOp "MOD" l n x = replaceNth n x l
 
@@ -225,4 +237,4 @@ evalBoolExpr (Bool True) = True
 evalBoolExpr (Bool False) = False
 
 
-
+interpret s = startEval (et s, M.empty, [])

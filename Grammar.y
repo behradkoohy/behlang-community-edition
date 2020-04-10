@@ -41,6 +41,7 @@ import Tokens
     '['         { TLSquare }
     ']'         { TRSquare }
     ','         { TComma }
+    '!!'        { TListAccess }
     append      { TAppend }
     modify      { TModify }
     len         { TLen }
@@ -48,10 +49,12 @@ import Tokens
 
 
 
+
 %right '->' in then else ';'
-%left '+' '-' '&&' '%'
-%left '||'
-%nonassoc '<' '>' '=' ':=' '(' ')' '=='
+%right '='
+%left '+' '-' '&&'
+%left '||' '%'
+%nonassoc '<' '>' ':=' '(' ')' '==' '!!'
 %%
 
 
@@ -75,9 +78,10 @@ Expr    : Expr '&&' Expr                                { BinOp "and" $1 $3 }
         | Expr ';' Expr                                 { ContEval $1 $3 }
         | Expr ';'                                      { $1 }
         | List                                          { ListStr $1 }
-        | len '(' Expr ')'                              { ListUnaOp "LEN" $3 }
-        | append '(' Expr ',' int ')'                   { ListBinOp "APP" ($3) $5}
+        | len '(' Expr ')'                              { ListUnaOp "LEN" $3 0 }
         | modify '(' Expr ',' int ',' Expr ')'          { ListBinBinOp "MOD" ($3) $5 $7}
+        | append '(' Expr ',' int ')'                   { ListBinOp "APP" ($3) $5}
+        | Expr '!!' Expr                                { ListAcc $1 $3 }
 
 
 List    : '[' ']'                                       { [] }
@@ -115,8 +119,9 @@ data Expr = Bool Bool                       |
             BinOp String Expr Expr          |
             PrintF Expr                     |
             ListStr [ Int ]                 |
-            ListUnaOp String Expr           |
+            ListUnaOp String Expr Int       |
             ListBinOp String Expr Int       |
+            ListAcc Expr Expr               |
             ListBinBinOp String Expr Int Expr 
             deriving (Show, Eq)
 
