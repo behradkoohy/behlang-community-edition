@@ -32,7 +32,7 @@ To access a specific location in an array, use ``` !! ```. e.g.
 [1,2] !! 1; -- 2
 [1,2] !! 2; -- Error, index out of bounds
 ```
-
+You can also use ``` len(L) ``` to get the length of the list. This is useful for arrays.
 
 ### Variable Declarations 
 Behlang supports declaring variables. Variables are stored by value and not reference so please be careful.
