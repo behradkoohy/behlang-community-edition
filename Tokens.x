@@ -20,6 +20,7 @@ tokens :-
   \>            {\p -> TGThan }
   \+            {\p -> TAdd }
   \-            {\p -> TMinus }
+  \*            {\p -> TStar }
   "=="          {\p -> TEquality }
   \%            {\p -> TModulo }
   if            {\p -> TIf }
@@ -48,6 +49,7 @@ tokens :-
   append        {\p -> TAppend }
   !!            {\p -> TListAccess }
   len           {\p -> TLen }
+  loadS         {\p -> TLoadS }
   $alpha [$alpha $digit \_ \’]*   { \s -> TVar s } 
 
 {
@@ -56,6 +58,7 @@ data Token =
         TBool Bool  |
         TLThan      |
         TAdd        |
+        TStar       |
         TModulo     |
         TEquality   |
         TIf         |
@@ -88,7 +91,8 @@ data Token =
         TAppend     |
         TListAccess |
         TModify     |
-        TLen
+        TLen        |
+        TLoadS 
         deriving (Eq, Show)
 
 

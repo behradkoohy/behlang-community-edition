@@ -3,6 +3,10 @@ import Tokens
 import Data.Map.Strict as M
 import Data.Maybe
 import Debug.Trace as D
+import System.Environment (getArgs)
+import System.IO (openFile, hGetContents)
+import System.IO( IOMode( ReadMode ) )
+
 
 
 data Frame  = HoleApp Expr E 
@@ -13,6 +17,7 @@ data Frame  = HoleApp Expr E
             | WhileHole Expr Expr  
             | ContEvalHole Expr 
             | PRINTING
+            | LOADING
             | ListAccHole Expr Char -- char is side being evaluated
             deriving (Show, Eq)
 
@@ -33,10 +38,6 @@ push e (Queue es) = Queue (es ++ [e])
 
 -- -- Precondition: Queue is not empty
 -- peek (Queue (x:xs)) = x
-
-
-
-
 
 eval1 :: (Expr, E, K) -> (Expr, E, K)
 -- Primitive type return
@@ -113,6 +114,7 @@ eval1 ((WhileLoop cond exprs ), e, k)   | fst3 (eval1 (cond, e, []) )  == (Bool 
                                         | fst3 (eval1 (cond, e, []) )  == (Bool False) = eval1 (Bool False, e, k)
 -- = eval1 (Loop, e, (WhileHole cond exprs exprs e):k)
 eval1 ((PrintF expr), e, k) = (fst3 $ eval1 (expr, e, []), e, (PRINTING):k)
+eval1 ((LoadS), e, k) = ((Int 0), e, (LOADING):k)
 -- Continuing evalutation
 eval1 (ContEval exp1 exp2, e, k) = eval1 (exp1, e, (ContEvalHole exp2):k)
 eval1 a = a
@@ -131,7 +133,12 @@ startEval s = do
                                 putStrLn $ (pretty expr) 
                                 (startEval (expr, e, (tail k)))
                             else do
-                            (startEval (expr, e, k))
+                                if ((head k) == (LOADING))
+                                    then do
+                                        streams <- setUpStreams
+                                        (startEval (expr, (addToE e streams 1) , (tail k)))
+                                    else do
+                                        (startEval (expr, e, k))
 
 
 -- ==========================================================================================
@@ -192,10 +199,6 @@ snd3 (_, x, _) = x
 thd3 :: (a, b, c) -> c
 thd3 (_, _, x) = x
 
-
-
-
-
 insOrUpdMap :: [Char] -> Expr -> Map [Char] Expr -> Map [Char] Expr
 insOrUpdMap key val map = M.insert key val $ M.delete key map
 
@@ -205,26 +208,20 @@ applyBinOp "or" x y = x || y
 applyIntBinOp "+" x y = x + y
 applyIntBinOp "-" x y = x - y
 applyIntBinOp "%" x y = mod x y
+applyIntBinOp "*" x y = x * y
 -- applyIntBinOp "==" x y = x == y
-
 
 -- applyCompBinOp :: String -> Int -> Int -> Bool
 applyCompBinOp "<" x y = x < y
 applyCompBinOp ">" x y = x > y
 applyCompBinOp "=" x y = x == y
 
-
-
 applyListUnaOp "LEN" l 0 = length l
 applyListUnaOp "ACC" l x = l !! x
 
-
 applyListOp "APP" l x = l ++ [x]
 
-
 applyListBinOp "MOD" l n x = replaceNth n x l
-
-
 
 replaceNth :: Int -> a -> [a] -> [a]
 replaceNth _ _ [] = []
@@ -236,5 +233,40 @@ replaceNth n newVal (x:xs)  | n == 0 = newVal:xs
 evalBoolExpr (Bool True) = True
 evalBoolExpr (Bool False) = False
 
+iConv = (Prelude.map (\x -> read x::Int))
+
+
+setUpStreams = do
+    input <- getContents
+    let split_inp = transpose $ Prelude.map iConv (Prelude.map (splitBy ' ') (splitBy '\n' input))
+    -- let split_inp = transpose (Prelude.map (splitBy ' ') (splitBy '\n' input))
+    return split_inp
+
+splitBy delimiter = Prelude.foldr f [[]] 
+            where f c l@(x:xs)  | c == delimiter = []:l
+                                | otherwise = (c:x):xs
+
+
+
+addToE :: E -> [[Int]] -> Int -> E
+addToE e (l:[]) n = insOrUpdMap ("a" ++ (show n)) (ListStr l) e
+addToE e (l:ls) n = addToE (insOrUpdMap ("a" ++ (show n)) (ListStr l) e) ls (n+1)
+
+
+transpose:: [[a]]->[[a]]
+transpose ([]:_) = []
+transpose x = (Prelude.map head x) : transpose (Prelude.map tail x)
+
+
 
 interpret s = startEval (et s, M.empty, [])
+
+mainT = do 
+        s <- setUpStreams
+        putStrLn $ show s
+
+main = do 
+    args <- getArgs
+    file <- openFile (head args) ReadMode
+    text <- hGetContents file
+    interpret text

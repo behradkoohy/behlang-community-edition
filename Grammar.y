@@ -13,6 +13,7 @@ import Tokens
     '<'         { TLThan }
     '>'         { TGThan }
     '+'         { TAdd }
+    '*'         { TStar }
     '%'         { TModulo }
     '-'         { TMinus }
     '=='        { TEquality }
@@ -45,6 +46,7 @@ import Tokens
     append      { TAppend }
     modify      { TModify }
     len         { TLen }
+    loadS       { TLoadS }
 
 
 
@@ -53,7 +55,7 @@ import Tokens
 %right '->' in then else ';'
 %right '='
 %left '+' '-' '&&'
-%left '||' '%'
+%left '||' '%' '*'
 %nonassoc '<' '>' ':=' '(' ')' '==' '!!'
 %%
 
@@ -65,9 +67,10 @@ Expr    : Expr '&&' Expr                                { BinOp "and" $1 $3 }
         | Expr '==' Expr                                { CompBinOp "=" $1 $3 }
         | Expr '+' Expr                                 { IntBinOp "+" $1 $3 }
         | Expr '-' Expr                                 { IntBinOp "-" $1 $3 }
+        | Expr '*' Expr                                 { IntBinOp "*" $1 $3 }
         | Expr '%' Expr                                 { IntBinOp "%" $1 $3}
         | bool                                          { Bool $1 }
-        | if Expr then Expr else Expr                   { If $2 $4 $6 }
+        | if '(' Expr ')' then '(' Expr ')' else '(' Expr ')'  { If $3 $7 $11 }
         | '(' Expr ')'                                  { $2 }
         | var '=' Expr                                  { VarDec $1 $3 }
         | var ':=' Expr                                 { PVarDec $1 $3 }
@@ -82,6 +85,7 @@ Expr    : Expr '&&' Expr                                { BinOp "and" $1 $3 }
         | modify '(' Expr ',' int ',' Expr ')'          { ListBinBinOp "MOD" ($3) $5 $7}
         | append '(' Expr ',' int ')'                   { ListBinOp "APP" ($3) $5}
         | Expr '!!' Expr                                { ListAcc $1 $3 }
+        | loadS                                         { LoadS }
 
 
 List    : '[' ']'                                       { [] }
@@ -122,6 +126,7 @@ data Expr = Bool Bool                       |
             ListUnaOp String Expr Int       |
             ListBinOp String Expr Int       |
             ListAcc Expr Expr               |
+            LoadS                           |
             ListBinBinOp String Expr Int Expr 
             deriving (Show, Eq)
 
