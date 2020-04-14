@@ -219,6 +219,7 @@ applyIntBinOp "*" x y = x * y
 applyCompBinOp "<" x y = x < y
 applyCompBinOp ">" x y = x > y
 applyCompBinOp "=" x y = x == y
+applyCompBinOp "!" x y = x /= y
 
 applyListUnaOp "LEN" l 0 = length l
 applyListUnaOp "ACC" l x = l !! x

@@ -452,21 +452,21 @@ alex_tab_size = 8
 alex_base :: Array Int Int
 alex_base = listArray (0 :: Int, 92)
   [ -8
-  , -27
-  , -146
+  , -23
+  , -147
   , -73
   , 0
   , 40
   , 0
   , 168
-  , -120
+  , -121
   , 296
-  , -115
-  , -28
+  , -116
+  , -29
   , 552
   , 488
   , 0
-  , 6
+  , 7
   , 734
   , 697
   , 942
@@ -494,7 +494,7 @@ alex_base = listArray (0 :: Int, 92)
   , 0
   , 1503
   , 1590
-  , -48
+  , 0
   , 1665
   , 0
   , 0
@@ -554,21 +554,21 @@ alex_table = listArray (0 :: Int, 5322)
   , 15
   , 15
   , 15
-  , 52
   , 72
   , 2
   , 46
   , 45
+  , 52
   , 16
   , 26
-  , 34
+  , 0
+  , 0
   , 0
   , 15
   , 15
   , 15
   , 15
   , 15
-  , 0
   , 0
   , 0
   , 0
@@ -586,8 +586,8 @@ alex_table = listArray (0 :: Int, 5322)
   , 23
   , 50
   , 24
+  , 34
   , 15
-  , 0
   , 17
   , 17
   , 17
@@ -5881,21 +5881,21 @@ alex_check = listArray (0 :: Int, 5322)
   , 11
   , 12
   , 13
-  , 33
   , 153
   , 128
   , 124
   , 38
+  , 33
   , 45
   , 61
-  , 61
+  , -1
+  , -1
   , -1
   , 9
   , 10
   , 11
   , 12
   , 13
-  , -1
   , -1
   , -1
   , -1
@@ -5913,8 +5913,8 @@ alex_check = listArray (0 :: Int, 5322)
   , 43
   , 44
   , 45
+  , 61
   , 32
-  , -1
   , 48
   , 49
   , 50
@@ -11472,7 +11472,7 @@ alex_actions = array (0 :: Int, 76)
   , (0,alex_action_40)
   ]
 
-{-# LINE 55 "Tokens.x" #-}
+{-# LINE 56 "Tokens.x" #-}
 
 data Token = 
         TInt Int    |
@@ -11490,7 +11490,7 @@ data Token =
         TVar String |
         TLambda     |
         TEqual      |
-        TPEqual     |
+        TNEqual     |
         TLParen     |
         TRParen     |
         TLCurly     |
@@ -11535,7 +11535,7 @@ alex_action_15 = \p -> TLet
 alex_action_16 = \p -> TElse 
 alex_action_17 = \p -> TIn
 alex_action_18 = \p -> TEqual 
-alex_action_19 = \p -> TPEqual 
+alex_action_19 = \p -> TNEqual 
 alex_action_20 = \p -> TFunc 
 alex_action_21 = \p -> TLambda 
 alex_action_22 = \p -> TLParen 

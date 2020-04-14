@@ -29,7 +29,7 @@ tokens :-
   else          {\p -> TElse }
   in            {\p -> TIn}
   "="           {\p -> TEqual }
-  ":="          {\p -> TPEqual }
+  "!="          {\p -> TNEqual }
   "->"          {\p -> TFunc }
   "\"           {\p -> TLambda }
   "("           {\p -> TLParen }
@@ -50,6 +50,7 @@ tokens :-
   !!            {\p -> TListAccess }
   len           {\p -> TLen }
   loadS         {\p -> TLoadS }
+
   $alpha [$alpha $digit \_ \’]*   { \s -> TVar s } 
 
 {
@@ -69,7 +70,7 @@ data Token =
         TVar String |
         TLambda     |
         TEqual      |
-        TPEqual     |
+        TNEqual     |
         TLParen     |
         TRParen     |
         TLCurly     |

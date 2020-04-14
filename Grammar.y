@@ -26,7 +26,6 @@ import Tokens
     '->'        { TFunc }
     '\\'        { TLambda }
     '='         { TEqual }
-    ':='        { TPEqual }
     var         { TVar $$ }
     '('         { TLParen }
     ')'         { TRParen }
@@ -47,6 +46,7 @@ import Tokens
     modify      { TModify }
     len         { TLen }
     loadS       { TLoadS }
+    '!='        { TNEqual }
 
 
 
@@ -56,7 +56,7 @@ import Tokens
 %right '='
 %left '+' '-' '&&'
 %left '||' '%' '*'
-%nonassoc '<' '>' ':=' '(' ')' '==' '!!'
+%nonassoc '<' '>' '!=' '(' ')' '==' '!!'
 %%
 
 
@@ -65,6 +65,7 @@ Expr    : Expr '&&' Expr                                { BinOp "and" $1 $3 }
         | Expr '<' Expr                                 { CompBinOp "<" $1 $3 }
         | Expr '>' Expr                                 { CompBinOp ">" $1 $3 }
         | Expr '==' Expr                                { CompBinOp "=" $1 $3 }
+        | Expr '!=' Expr                                { CompBinOp "!" $1 $3 }
         | Expr '+' Expr                                 { IntBinOp "+" $1 $3 }
         | Expr '-' Expr                                 { IntBinOp "-" $1 $3 }
         | Expr '*' Expr                                 { IntBinOp "*" $1 $3 }
@@ -73,7 +74,6 @@ Expr    : Expr '&&' Expr                                { BinOp "and" $1 $3 }
         | if '(' Expr ')' then '(' Expr ')' else '(' Expr ')'  { If $3 $7 $11 }
         | '(' Expr ')'                                  { $2 }
         | var '=' Expr                                  { VarDec $1 $3 }
-        | var ':=' Expr                                 { PVarDec $1 $3 }
         | int                                           { Int $1 }
         | var                                           { VarCall $1 }
         | while '(' Expr ')' '{' Expr '}'               { WhileLoop $3 $6 }
