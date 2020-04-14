@@ -16,7 +16,7 @@ data HappyAbsSyn t4 t5 t6
 	| HappyAbsSyn6 t6
 
 happyExpList :: Happy_Data_Array.Array Int Int
-happyExpList = Happy_Data_Array.listArray (0,343) ([192,1537,7730,16432,33152,1932,4080,49152,16,0,0,0,0,0,0,0,0,0,16384,0,0,1536,0,192,1537,7730,0,256,0,0,64,0,1,0,1,0,4,0,0,1,0,16384,0,0,0,0,65280,0,268,16432,33152,1932,4108,8288,483,1027,51224,49272,256,12806,12318,32832,35969,3079,24592,58144,769,6148,30920,192,1537,7730,16432,33152,1932,4108,8288,483,1027,51224,49272,256,12806,12318,32832,35969,3079,24592,58144,1,0,256,0,0,128,0,0,0,4108,8288,483,1027,51224,120,255,3080,12289,32832,35969,3079,24592,58144,769,6148,30920,65280,2048,268,0,0,0,2032,49152,16,0,0,0,255,3080,49153,63,17154,1024,0,0,0,0,0,65280,0,396,16320,0,99,4080,49280,16,0,0,0,91,1024,49153,16,16384,61440,15,4288,0,0,0,23296,0,260,4288,0,64,1072,0,16,364,4096,4,0,0,0,0,0,0,0,0,256,0,0,64,0,0,0,0,0,0,0,0,0,64,0,1024,0,0,0,1,3072,24592,58144,1,8192,0,0,0,128,16432,33152,1932,0,0,0,1020,12416,49156,256,12806,49182,63,17154,0,0,0,64512,8195,1072,0,0,0,32768,0,0,0,64,0,1027,51224,120,255,3080,1,0,0,0,0
+happyExpList = Happy_Data_Array.listArray (0,353) ([192,1537,7730,16432,33152,1932,4080,49152,16,0,0,0,0,0,0,0,0,0,16384,0,0,1536,0,192,1537,7730,0,256,0,0,64,0,1,0,1,0,4,0,0,1,0,16384,0,0,0,0,65280,0,268,16432,33152,1932,4108,8288,483,1027,51224,49272,256,12806,12318,32832,35969,3079,24592,58144,769,6148,30920,192,1537,7730,16432,33152,1932,4108,8288,483,1027,51224,49272,256,12806,12318,32832,35969,3079,24592,58144,1,0,256,0,0,128,0,0,0,4108,8288,483,1027,51224,120,255,3080,12289,32832,35969,3079,24592,58144,769,6148,30920,65280,2048,268,0,0,0,2032,49152,16,0,0,0,255,3080,49153,63,17154,1024,0,0,0,0,0,65280,0,396,16320,0,99,4080,49280,16,0,0,0,91,1024,49153,16,16384,61440,15,4288,0,0,0,23296,0,260,4288,0,64,1072,0,16,364,4096,4,0,0,0,0,0,0,0,0,256,0,0,192,1537,7730,0,0,0,0,0,0,0,64,0,1024,0,0,0,1,3072,24592,58144,64513,8195,1072,0,0,128,16432,33152,1932,0,0,0,1020,12416,49156,256,12806,49182,63,17154,0,0,0,64512,8195,1072,0,0,0,32768,0,0,0,64,0,1027,51224,120,255,3080,1,0,0,0,0
 	])
 
 {-# NOINLINE happyExpListPerState #-}
@@ -665,7 +665,20 @@ action_62 _ = happyReduce_22
 action_63 (7) = happyShift action_72
 action_63 _ = happyFail (happyExpListPerState 63)
 
-action_64 (7) = happyShift action_71
+action_64 (7) = happyShift action_4
+action_64 (8) = happyShift action_5
+action_64 (17) = happyShift action_6
+action_64 (26) = happyShift action_7
+action_64 (27) = happyShift action_8
+action_64 (34) = happyShift action_9
+action_64 (37) = happyShift action_10
+action_64 (38) = happyShift action_11
+action_64 (42) = happyShift action_12
+action_64 (43) = happyShift action_13
+action_64 (44) = happyShift action_14
+action_64 (45) = happyShift action_15
+action_64 (4) = happyGoto action_71
+action_64 (5) = happyGoto action_3
 action_64 _ = happyFail (happyExpListPerState 64)
 
 action_65 _ = happyReduce_30
@@ -697,7 +710,18 @@ action_70 (4) = happyGoto action_75
 action_70 (5) = happyGoto action_3
 action_70 _ = happyFail (happyExpListPerState 70)
 
+action_71 (9) = happyShift action_17
+action_71 (10) = happyShift action_18
+action_71 (11) = happyShift action_19
+action_71 (12) = happyShift action_20
+action_71 (13) = happyShift action_21
+action_71 (14) = happyShift action_22
+action_71 (15) = happyShift action_23
+action_71 (16) = happyShift action_24
 action_71 (28) = happyShift action_74
+action_71 (35) = happyShift action_25
+action_71 (36) = happyShift action_26
+action_71 (41) = happyShift action_27
 action_71 _ = happyFail (happyExpListPerState 71)
 
 action_72 (40) = happyShift action_73
@@ -1041,7 +1065,7 @@ happyReduction_23 (_ `HappyStk`
 
 happyReduce_24 = happyReduce 6 4 happyReduction_24
 happyReduction_24 (_ `HappyStk`
-	(HappyTerminal (TInt happy_var_5)) `HappyStk`
+	(HappyAbsSyn4  happy_var_5) `HappyStk`
 	_ `HappyStk`
 	(HappyAbsSyn4  happy_var_3) `HappyStk`
 	_ `HappyStk`
@@ -1201,7 +1225,7 @@ data Expr = Bool Bool                       |
             PrintF Expr                     |
             ListStr [ Int ]                 |
             ListUnaOp String Expr Int       |
-            ListBinOp String Expr Int       |
+            ListBinOp String Expr Expr      |
             ListAcc Expr Expr               |
             LoadS                           |
             ListBinBinOp String Expr Int Expr 

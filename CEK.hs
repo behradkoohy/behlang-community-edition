@@ -103,7 +103,11 @@ eval1 ((BinOp op x y), e, k ) = eval1 (BinOp op (fst3 (eval1 (x, e, []))) (fst3 
 
 -- List Operators
 eval1 (ListUnaOp op l x, e, k) = eval1 (Int (applyListUnaOp op (getList $ fst3 $ eval1 (l, e, [])) x), e, k)
-eval1 (ListBinOp op l x, e, k) = eval1 (ListStr (applyListOp op (getList $ fst3 $ eval1 (l, e, [])) x), e, k)
+eval1 (ListBinOp op (ListStr s) (Int x), e, k) = eval1 (ListStr (applyListOp op s x), e, k )
+eval1 (ListBinOp op l x, e, k) = eval1 (ListBinOp op l' x', e, k)
+                                where 
+                                    l' = fst3 $ eval1 (l, e, [])
+                                    x' = fst3 $ eval1 (x, e, [])
 eval1 (ListBinBinOp op l n x, e, k) = eval1 (ListStr (applyListBinOp op (getList $ fst3 $ eval1 (l, e, [])) n (getInt $ fst3 $ eval1 (x, e, []) ) ), e, k)
 eval1 (ListAcc (ListStr l) ((Int x)), e, k ) = eval1 (Int (applyListUnaOp "ACC" l x), e, k)
 eval1 (ListAcc expr ((Int x)), e, k ) = eval1 (expr, e, (ListAccHole (Int x) 'L'):k )

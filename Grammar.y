@@ -83,7 +83,7 @@ Expr    : Expr '&&' Expr                                { BinOp "and" $1 $3 }
         | List                                          { ListStr $1 }
         | len '(' Expr ')'                              { ListUnaOp "LEN" $3 0 }
         | modify '(' Expr ',' int ',' Expr ')'          { ListBinBinOp "MOD" ($3) $5 $7}
-        | append '(' Expr ',' int ')'                   { ListBinOp "APP" ($3) $5}
+        | append '(' Expr ',' Expr ')'                  { ListBinOp "APP" ($3) $5}
         | Expr '!!' Expr                                { ListAcc $1 $3 }
         | loadS                                         { LoadS }
 
@@ -124,7 +124,7 @@ data Expr = Bool Bool                       |
             PrintF Expr                     |
             ListStr [ Int ]                 |
             ListUnaOp String Expr Int       |
-            ListBinOp String Expr Int       |
+            ListBinOp String Expr Expr      |
             ListAcc Expr Expr               |
             LoadS                           |
             ListBinBinOp String Expr Int Expr 
