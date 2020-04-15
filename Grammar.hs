@@ -962,7 +962,7 @@ happyReduction_10 (HappyAbsSyn4  happy_var_3)
 happyReduction_10 _ _ _  = notHappyAtAll 
 
 happyReduce_11 = happySpecReduce_1  4 happyReduction_11
-happyReduction_11 (HappyTerminal (TBool happy_var_1))
+happyReduction_11 (HappyTerminal (TBool _ happy_var_1))
 	 =  HappyAbsSyn4
 		 (Bool happy_var_1
 	)
@@ -998,21 +998,21 @@ happyReduction_13 _ _ _  = notHappyAtAll
 happyReduce_14 = happySpecReduce_3  4 happyReduction_14
 happyReduction_14 (HappyAbsSyn4  happy_var_3)
 	_
-	(HappyTerminal (TVar happy_var_1))
+	(HappyTerminal (TVar _ happy_var_1))
 	 =  HappyAbsSyn4
 		 (VarDec happy_var_1 happy_var_3
 	)
 happyReduction_14 _ _ _  = notHappyAtAll 
 
 happyReduce_15 = happySpecReduce_1  4 happyReduction_15
-happyReduction_15 (HappyTerminal (TInt happy_var_1))
+happyReduction_15 (HappyTerminal (TInt _ happy_var_1))
 	 =  HappyAbsSyn4
 		 (Int happy_var_1
 	)
 happyReduction_15 _  = notHappyAtAll 
 
 happyReduce_16 = happySpecReduce_1  4 happyReduction_16
-happyReduction_16 (HappyTerminal (TVar happy_var_1))
+happyReduction_16 (HappyTerminal (TVar _ happy_var_1))
 	 =  HappyAbsSyn4
 		 (VarCall happy_var_1
 	)
@@ -1079,7 +1079,7 @@ happyReduce_23 = happyReduce 8 4 happyReduction_23
 happyReduction_23 (_ `HappyStk`
 	(HappyAbsSyn4  happy_var_7) `HappyStk`
 	_ `HappyStk`
-	(HappyTerminal (TInt happy_var_5)) `HappyStk`
+	(HappyTerminal (TInt _ happy_var_5)) `HappyStk`
 	_ `HappyStk`
 	(HappyAbsSyn4  happy_var_3) `HappyStk`
 	_ `HappyStk`
@@ -1133,7 +1133,7 @@ happyReduction_28 _
 happyReduction_28 _ _ _  = notHappyAtAll 
 
 happyReduce_29 = happySpecReduce_1  6 happyReduction_29
-happyReduction_29 (HappyTerminal (TInt happy_var_1))
+happyReduction_29 (HappyTerminal (TInt _ happy_var_1))
 	 =  HappyAbsSyn6
 		 ([happy_var_1]
 	)
@@ -1142,7 +1142,7 @@ happyReduction_29 _  = notHappyAtAll
 happyReduce_30 = happySpecReduce_3  6 happyReduction_30
 happyReduction_30 (HappyAbsSyn6  happy_var_3)
 	_
-	(HappyTerminal (TInt happy_var_1))
+	(HappyTerminal (TInt _ happy_var_1))
 	 =  HappyAbsSyn6
 		 ([happy_var_1] ++ happy_var_3
 	)
@@ -1154,45 +1154,45 @@ happyNewToken action sts stk [] =
 happyNewToken action sts stk (tk:tks) =
 	let cont i = action i i tk (HappyState action) sts stk tks in
 	case tk of {
-	TInt happy_dollar_dollar -> cont 7;
-	TBool happy_dollar_dollar -> cont 8;
-	TLThan -> cont 9;
-	TGThan -> cont 10;
-	TAdd -> cont 11;
-	TStar -> cont 12;
-	TModulo -> cont 13;
-	TMinus -> cont 14;
-	TEquality -> cont 15;
-	TSemiColon -> cont 16;
-	TIf -> cont 17;
-	TElse -> cont 18;
-	TThen -> cont 19;
-	TLet -> cont 20;
-	TIn -> cont 21;
-	TFunc -> cont 22;
-	TLambda -> cont 23;
-	TEqual -> cont 24;
-	TVar happy_dollar_dollar -> cont 25;
-	TLParen -> cont 26;
-	TRParen -> cont 27;
-	TLCurly -> cont 28;
-	TRCurly -> cont 29;
-	TIntType -> cont 30;
-	TBoolType -> cont 31;
-	TColon -> cont 32;
-	TWhile -> cont 33;
-	TOr -> cont 34;
-	TAnd -> cont 35;
-	TPrintF -> cont 36;
-	TLSquare -> cont 37;
-	TRSquare -> cont 38;
-	TComma -> cont 39;
-	TListAccess -> cont 40;
-	TAppend -> cont 41;
-	TModify -> cont 42;
-	TLen -> cont 43;
-	TLoadS -> cont 44;
-	TNEqual -> cont 45;
+	TInt _ happy_dollar_dollar -> cont 7;
+	TBool _ happy_dollar_dollar -> cont 8;
+	TLThan _ -> cont 9;
+	TGThan _ -> cont 10;
+	TAdd _ -> cont 11;
+	TStar _ -> cont 12;
+	TModulo _ -> cont 13;
+	TMinus _ -> cont 14;
+	TEquality _ -> cont 15;
+	TSemiColon _ -> cont 16;
+	TIf _ -> cont 17;
+	TElse _ -> cont 18;
+	TThen _ -> cont 19;
+	TLet _ -> cont 20;
+	TIn _ -> cont 21;
+	TFunc _ -> cont 22;
+	TLambda _ -> cont 23;
+	TEqual _ -> cont 24;
+	TVar _ happy_dollar_dollar -> cont 25;
+	TLParen _ -> cont 26;
+	TRParen _ -> cont 27;
+	TLCurly _ -> cont 28;
+	TRCurly _ -> cont 29;
+	TIntType _ -> cont 30;
+	TBoolType _ -> cont 31;
+	TColon _ -> cont 32;
+	TWhile _ -> cont 33;
+	TOr _ -> cont 34;
+	TAnd _ -> cont 35;
+	TPrintF _ -> cont 36;
+	TLSquare _ -> cont 37;
+	TRSquare _ -> cont 38;
+	TComma _ -> cont 39;
+	TListAccess _ -> cont 40;
+	TAppend _ -> cont 41;
+	TModify _ -> cont 42;
+	TLen _ -> cont 43;
+	TLoadS _ -> cont 44;
+	TNEqual _ -> cont 45;
 	_ -> happyError' ((tk:tks), [])
 	}
 
@@ -1228,9 +1228,11 @@ parseLambda tks = happyRunIdentity happySomeParser where
 happySeq = happyDontSeq
 
 
+-- parseError :: [Token] -> a
+-- parseError a = error ("Parse error " ++ (show a))
 parseError :: [Token] -> a
-parseError a = error ("Parse error " ++ (show a))
-
+parseError [] = error "Unknown Parse Error" 
+parseError (t:ts) = error ("Parse error at line:column " ++ (tokenPosn t))
 
 
 data Expr = Bool Bool                       |

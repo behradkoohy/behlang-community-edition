@@ -80,23 +80,23 @@ type Byte = Word8
 -- The input type
 
 
+type AlexInput = (AlexPosn,     -- current position,
+                  Char,         -- previous char
+                  [Byte],       -- pending bytes on current char
+                  String)       -- current input string
 
+ignorePendingBytes :: AlexInput -> AlexInput
+ignorePendingBytes (p,c,_ps,s) = (p,c,[],s)
 
+alexInputPrevChar :: AlexInput -> Char
+alexInputPrevChar (_p,c,_bs,_s) = c
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+alexGetByte :: AlexInput -> Maybe (Byte,AlexInput)
+alexGetByte (p,c,(b:bs),s) = Just (b,(p,c,bs,s))
+alexGetByte (_,_,[],[]) = Nothing
+alexGetByte (p,_,[],(c:s))  = let p' = alexMove p c
+                              in case utf8Encode' c of
+                                   (b, bs) -> p' `seq`  Just (b, (p', c, bs, s))
 
 
 
@@ -169,16 +169,16 @@ type Byte = Word8
 -- assuming the usual eight character tab stops.
 
 
+data AlexPosn = AlexPn !Int !Int !Int
+        deriving (Eq,Show)
 
+alexStartPos :: AlexPosn
+alexStartPos = AlexPn 0 1 1
 
-
-
-
-
-
-
-
-
+alexMove :: AlexPosn -> Char -> AlexPosn
+alexMove (AlexPn a l c) '\t' = AlexPn (a+1)  l     (c+alex_tab_size-((c-1) `mod` alex_tab_size))
+alexMove (AlexPn a l _) '\n' = AlexPn (a+1) (l+1)   1
+alexMove (AlexPn a l c) _    = AlexPn (a+1)  l     (c+1)
 
 
 -- -----------------------------------------------------------------------------
@@ -340,25 +340,25 @@ type Byte = Word8
 -- Basic wrapper
 
 
-type AlexInput = (Char,[Byte],String)
 
-alexInputPrevChar :: AlexInput -> Char
-alexInputPrevChar (c,_,_) = c
 
--- alexScanTokens :: String -> [token]
-alexScanTokens str = go ('\n',[],str)
-  where go inp__@(_,_bs,s) =
-          case alexScan inp__ 0 of
-                AlexEOF -> []
-                AlexError _ -> error "lexical error"
-                AlexSkip  inp__' _ln     -> go inp__'
-                AlexToken inp__' len act -> act (take len s) : go inp__'
 
-alexGetByte :: AlexInput -> Maybe (Byte,AlexInput)
-alexGetByte (c,(b:bs),s) = Just (b,(c,bs,s))
-alexGetByte (_,[],[])    = Nothing
-alexGetByte (_,[],(c:s)) = case utf8Encode' c of
-                             (b, bs) -> Just (b, (c, bs, s))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -402,14 +402,14 @@ alexGetByte (_,[],(c:s)) = case utf8Encode' c of
 -- Adds text positions to the basic model.
 
 
-
-
-
-
-
-
-
-
+--alexScanTokens :: String -> [token]
+alexScanTokens str0 = go (alexStartPos,'\n',[],str0)
+  where go inp__@(pos,_,_,str) =
+          case alexScan inp__ 0 of
+                AlexEOF -> []
+                AlexError ((AlexPn _ line column),_,_,_) -> error $ "lexical error at line " ++ (show line) ++ ", column " ++ (show column)
+                AlexSkip  inp__' _ln     -> go inp__'
+                AlexToken inp__' len act -> act pos (take len str) : go inp__'
 
 
 
@@ -11472,90 +11472,126 @@ alex_actions = array (0 :: Int, 76)
   , (0,alex_action_40)
   ]
 
-{-# LINE 56 "Tokens.x" #-}
+{-# LINE 59 "Tokens.x" #-}
+
+
+-- Helper function
+tok f p s = f p s
 
 data Token = 
-        TInt Int    |
-        TBool Bool  |
-        TLThan      |
-        TAdd        |
-        TStar       |
-        TModulo     |
-        TEquality   |
-        TIf         |
-        TThen       |
-        TLet        |
-        TIn         |
-        TFunc       |
-        TVar String |
-        TLambda     |
-        TEqual      |
-        TNEqual     |
-        TLParen     |
-        TRParen     |
-        TLCurly     |
-        TRCurly     |
-        TIntType    |
-        TBoolType   |
-        TElse       |
-        TColon      |
-        TGThan      |
-        TMinus      |
-        TWhile      |
-        TSemiColon  |
-        TAnd        |
-        TOr         |
-        TPrintF     |
-        TLSquare    |
-        TRSquare    |
-        TComma      |
-        TAppend     |
-        TListAccess |
-        TModify     |
-        TLen        |
-        TLoadS 
+        TInt AlexPosn Int                      |
+        TBool AlexPosn Bool                    |
+        TLThan AlexPosn                        |
+        TAdd AlexPosn                          |
+        TStar AlexPosn                         |
+        TModulo AlexPosn                       |
+        TEquality AlexPosn                     |
+        TIf AlexPosn                           |
+        TThen AlexPosn                         |
+        TLet AlexPosn                          |
+        TIn AlexPosn                           |
+        TFunc AlexPosn                         |
+        TVar AlexPosn String                   |
+        TLambda AlexPosn                       |
+        TEqual AlexPosn                        |
+        TNEqual AlexPosn                       |
+        TLParen AlexPosn                       |
+        TRParen AlexPosn                       |
+        TLCurly AlexPosn                       |
+        TRCurly AlexPosn                       |
+        TIntType AlexPosn                      |
+        TBoolType AlexPosn                     |
+        TElse AlexPosn                         |
+        TColon AlexPosn                        |
+        TGThan AlexPosn                        |
+        TMinus AlexPosn                        |
+        TWhile AlexPosn                        |
+        TSemiColon AlexPosn                    |
+        TAnd AlexPosn                          |
+        TOr AlexPosn                           |
+        TPrintF AlexPosn                       |
+        TLSquare AlexPosn                      |
+        TRSquare AlexPosn                      |
+        TComma AlexPosn                        |
+        TAppend AlexPosn                       |
+        TListAccess AlexPosn                   |
+        TModify AlexPosn                       |
+        TLen AlexPosn                          |
+        TLoadS AlexPosn
         deriving (Eq, Show)
 
 
+tokenPosn :: Token -> String
+tokenPosn (TVar  (AlexPn a l c) x) = show(l) ++ ":" ++ show(c)
+tokenPosn (TBool  (AlexPn a l c) x) = show(l) ++ ":" ++ show(c)
+tokenPosn (TInt  (AlexPn a l c) n) = show(l) ++ ":" ++ show(c)
+tokenPosn (TEqual  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TNEqual  (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TAdd (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TMinus (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TStar (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TLParen (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TRParen (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TSemiColon (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TLCurly (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TRCurly (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TWhile (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TIf (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TThen (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TElse (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TColon (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TGThan (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TSemiColon (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TAnd (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TOr (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TPrintF (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TLSquare (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TRSquare (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TComma (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TAppend (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TListAccess (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TModify (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TLen (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
+tokenPosn (TLoadS (AlexPn a l c)) = show(l) ++ ":" ++ show(c)
 
-alex_action_2 = \p -> TInt (read p) 
-alex_action_3 = \p -> TBool True 
-alex_action_4 = \p -> TBool False 
-alex_action_5 = \p -> TSemiColon 
-alex_action_6 = \p -> TLThan 
-alex_action_7 = \p -> TGThan 
-alex_action_8 = \p -> TAdd 
-alex_action_9 = \p -> TMinus 
-alex_action_10 = \p -> TStar 
-alex_action_11 = \p -> TEquality 
-alex_action_12 = \p -> TModulo 
-alex_action_13 = \p -> TIf 
-alex_action_14 = \p -> TThen 
-alex_action_15 = \p -> TLet 
-alex_action_16 = \p -> TElse 
-alex_action_17 = \p -> TIn
-alex_action_18 = \p -> TEqual 
-alex_action_19 = \p -> TNEqual 
-alex_action_20 = \p -> TFunc 
-alex_action_21 = \p -> TLambda 
-alex_action_22 = \p -> TLParen 
-alex_action_23 = \p -> TRParen 
-alex_action_24 = \p -> TLCurly 
-alex_action_25 = \p -> TRCurly 
-alex_action_26 = \p -> TIntType 
-alex_action_27 = \p -> TBoolType 
-alex_action_28 = \p -> TColon
-alex_action_29 = \p -> TWhile 
-alex_action_30 = \p -> TAnd
-alex_action_31 = \p -> TOr
-alex_action_32 = \p -> TPrintF 
-alex_action_33 = \p -> TLSquare 
-alex_action_34 = \p -> TRSquare 
-alex_action_35 = \p -> TComma 
-alex_action_36 = \p -> TAppend 
-alex_action_37 = \p -> TListAccess 
-alex_action_38 = \p -> TLen 
-alex_action_39 = \p -> TLoadS 
+alex_action_2 =  tok (\p s -> TInt p (read s) )
+alex_action_3 =  tok (\p s -> TBool p True )
+alex_action_4 =  tok (\p s -> TBool p False )
+alex_action_5 =  tok (\p s -> TSemiColon p)
+alex_action_6 =  tok (\p s -> TLThan p)
+alex_action_7 =  tok (\p s -> TGThan p)
+alex_action_8 =  tok (\p s -> TAdd p)
+alex_action_9 =  tok (\p s -> TMinus p)
+alex_action_10 =  tok (\p s -> TStar p)
+alex_action_11 =  tok (\p s -> TEquality p)
+alex_action_12 =  tok (\p s -> TModulo p)
+alex_action_13 =  tok (\p s -> TIf p)
+alex_action_14 =  tok (\p s -> TThen p)
+alex_action_15 =  tok (\p s -> TLet p)
+alex_action_16 =  tok (\p s -> TElse p)
+alex_action_17 =  tok (\p s -> TIn p)
+alex_action_18 =  tok (\p s -> TEqual p)
+alex_action_19 =  tok (\p s -> TNEqual p)
+alex_action_20 =  tok (\p s -> TFunc p)
+alex_action_21 =  tok (\p s -> TLambda p)
+alex_action_22 =  tok (\p s -> TLParen p)
+alex_action_23 =  tok (\p s -> TRParen p)
+alex_action_24 =  tok (\p s -> TLCurly p)
+alex_action_25 =  tok (\p s -> TRCurly p)
+alex_action_26 =  tok (\p s -> TIntType p)
+alex_action_27 =  tok (\p s -> TBoolType p)
+alex_action_28 =  tok (\p s -> TColon p)
+alex_action_29 =  tok (\p s -> TWhile p)
+alex_action_30 =  tok (\p s -> TAnd p)
+alex_action_31 =  tok (\p s -> TOr p)
+alex_action_32 =  tok (\p s -> TPrintF p)
+alex_action_33 =  tok (\p s -> TLSquare p)
+alex_action_34 =  tok (\p s -> TRSquare p)
+alex_action_35 =  tok (\p s -> TComma p)
+alex_action_36 =  tok (\p s -> TAppend p)
+alex_action_37 =  tok (\p s -> TListAccess p)
+alex_action_38 =  tok (\p s -> TLen p)
+alex_action_39 =  tok (\p s -> TLoadS p)
 alex_action_40 =  \s -> TVar s 
 {-# LINE 1 "templates/GenericTemplate.hs" #-}
 -- -----------------------------------------------------------------------------

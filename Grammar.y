@@ -8,45 +8,45 @@ import Tokens
 %error { parseError }
 
 %token
-    int         { TInt $$ }
-    bool        { TBool $$ }
-    '<'         { TLThan }
-    '>'         { TGThan }
-    '+'         { TAdd }
-    '*'         { TStar }
-    '%'         { TModulo }
-    '-'         { TMinus }
-    '=='        { TEquality }
-    ';'         { TSemiColon }
-    if          { TIf }
-    else        { TElse }
-    then        { TThen } 
-    let         { TLet }
-    in          { TIn }
-    '->'        { TFunc }
-    '\\'        { TLambda }
-    '='         { TEqual }
-    var         { TVar $$ }
-    '('         { TLParen }
-    ')'         { TRParen }
-    '{'         { TLCurly }
-    '}'         { TRCurly }
-    Int         { TIntType }
-    Bool        { TBoolType }
-    ':'         { TColon }
-    while       { TWhile }
-    '||'        { TOr }
-    '&&'        { TAnd }
-    print       { TPrintF }
-    '['         { TLSquare }
-    ']'         { TRSquare }
-    ','         { TComma }
-    '!!'        { TListAccess }
-    append      { TAppend }
-    modify      { TModify }
-    len         { TLen }
-    loadS       { TLoadS }
-    '!='        { TNEqual }
+    int         { TInt _ $$ }
+    bool        { TBool _ $$ }
+    '<'         { TLThan _ }
+    '>'         { TGThan _ }
+    '+'         { TAdd _ }
+    '*'         { TStar _ }
+    '%'         { TModulo _ }
+    '-'         { TMinus _ }
+    '=='        { TEquality _ }
+    ';'         { TSemiColon _ }
+    if          { TIf _ }
+    else        { TElse _ }
+    then        { TThen _ } 
+    let         { TLet _ }
+    in          { TIn _ }
+    '->'        { TFunc _ }
+    '\\'        { TLambda _ }
+    '='         { TEqual _ }
+    var         { TVar _ $$ }
+    '('         { TLParen _ }
+    ')'         { TRParen _ }
+    '{'         { TLCurly _ }
+    '}'         { TRCurly _ }
+    Int         { TIntType _ }
+    Bool        { TBoolType _ }
+    ':'         { TColon _ }
+    while       { TWhile _ }
+    '||'        { TOr _ }
+    '&&'        { TAnd _ }
+    print       { TPrintF _ }
+    '['         { TLSquare _ }
+    ']'         { TRSquare _ }
+    ','         { TComma _ }
+    '!!'        { TListAccess _ }
+    append      { TAppend _ }
+    modify      { TModify _ }
+    len         { TLen _ }
+    loadS       { TLoadS _ }
+    '!='        { TNEqual _ }
 
 
 
@@ -101,9 +101,11 @@ Cont    : int                                           { [$1] }
 
 {
 
+-- parseError :: [Token] -> a
+-- parseError a = error ("Parse error " ++ (show a))
 parseError :: [Token] -> a
-parseError a = error ("Parse error " ++ (show a))
-
+parseError [] = error "Unknown Parse Error" 
+parseError (t:ts) = error ("Parse error at line:column " ++ (tokenPosn t))
 
 
 data Expr = Bool Bool                       |

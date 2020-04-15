@@ -71,6 +71,8 @@ x=3;
 print(x); -- prints 3
 ```
 
+### TODO: 
+- Write up append() and !=
 
 
 
