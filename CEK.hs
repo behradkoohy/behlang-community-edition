@@ -114,14 +114,14 @@ eval1 (ListAcc expr ((Int x)), e, k ) = eval1 (expr, e, (ListAccHole (Int x) 'L'
 eval1 (ListAcc (ListStr l) expr, e, k ) = eval1 (expr, e, (ListAccHole (ListStr l) 'R'):k )
 eval1 (ListAcc exprL exprI, e, k ) = eval1 (exprL, e, (ListAccHole exprI 'L'):k )
 -- While loops
-eval1 ((WhileLoop cond exprs ), e, k)   | fst3 (eval1 (cond, e, []) )  == (Bool True)  = eval1 (exprs, e, [WhileHole cond exprs])
-                                        | fst3 (eval1 (cond, e, []) )  == (Bool False) = eval1 (Bool False, e, k)
+eval1 ((WhileLoop cond exprs ), e, k)   | fst3 (eval1 (cond, e, []) )  == (Bool True)  = (eval1 (exprs, e, (WhileHole cond exprs):k))
+                                        | fst3 (eval1 (cond, e, []) )  == (Bool False) = (eval1 (Bool False, e, k))
 -- = eval1 (Loop, e, (WhileHole cond exprs exprs e):k)
 eval1 ((PrintF expr), e, k) = (fst3 $ eval1 (expr, e, []), e, (PRINTING):k)
 eval1 ((LoadS), e, k) = ((Int 0), e, (LOADING):k)
 -- Continuing evalutation
 eval1 (ContEval exp1 exp2, e, k) = eval1 (exp1, e, (ContEvalHole exp2):k)
-eval1 a = a
+-- eval1 a = a
 
 
 -- use for all messy/monadic functions
